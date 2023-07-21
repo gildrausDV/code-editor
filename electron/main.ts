@@ -1,5 +1,50 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'node:path'
+
+const fs = require('fs');
+
+const readFiles = (directoryPath: string) => {
+  console.log('READ FILES');
+  try {
+    const fileNames = fs.readdirSync(directoryPath).map((fileOrFolder: any) => {
+      const fullPath = path.join(directoryPath, fileOrFolder);
+      if (fs.statSync(fullPath).isDirectory()) {
+        return {
+          type: 'directory',
+          name: fileOrFolder,
+          children: readFiles(fullPath),
+        };
+      } else {
+        return {
+          type: 'file',
+          name: fileOrFolder,
+        };
+      }
+    });
+
+    console.log(fileNames);
+
+    return fileNames;
+  } catch (error) {
+    console.error('Error reading folders:', error);
+    return [];
+  }
+};
+
+ipcMain.on('read-files', (event, dirPath) => {
+  try {
+    // Read all files and folders from the specified path recursively
+    const files = readFiles(dirPath);
+
+    // Send the files array back to the renderer process
+    event.sender.send('files-read', files);
+  } catch (error) {
+    console.error('Error reading folders:', error);
+    // Send an empty array or an error message back to the renderer process if needed
+    event.sender.send('files-read', []);
+  }
+});
+
 
 // The built directory structure
 //
@@ -23,6 +68,8 @@ function createWindow() {
     icon: path.join(process.env.PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true
     },
   })
 

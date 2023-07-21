@@ -90,3 +90,21 @@ window.onmessage = ev => {
 }
 
 setTimeout(removeLoading, 4999)
+
+const { contextBridge, ipcRenderer } = require('electron');
+
+var filesRead: any[] = [];
+
+contextBridge.exposeInMainWorld('electron', {
+  readFilesFromPath: (dirPath: string) => {
+    ipcRenderer.send('read-files', dirPath);
+  },
+  getFiles: () => {
+    return filesRead;
+  }
+});
+
+ipcRenderer.on('files-read', (_event, files) => {
+  console.log('Folders in the directory:', files);
+  filesRead = files;
+});
