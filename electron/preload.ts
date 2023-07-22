@@ -99,12 +99,5 @@ contextBridge.exposeInMainWorld('electron', {
   readFilesFromPath: (dirPath: string) => {
     ipcRenderer.send('read-files', dirPath);
   },
-  getFiles: () => {
-    return filesRead;
-  }
-});
-
-ipcRenderer.on('files-read', (_event, files) => {
-  console.log('Folders in the directory:', files);
-  filesRead = files;
+  getFiles: async (dirPath: string) => ipcRenderer.invoke('get-files', dirPath)
 });

@@ -1,28 +1,46 @@
 <script setup lang="ts">
   import { ref, onMounted } from 'vue';
+  import ProjectExplorerFolder from './ProjectExplorerFolder.vue'
 
-  window.electron.readFilesFromPath("/Users/dimitrijevujcic/Desktop/Dimitrije/Bachelor\'s_degree/code-editor/test-project");
+  const emit = defineEmits();
 
-  var filesRead:any = ref([]);
+  const filesToDisplay = ref([]);
 
-  function getFiles() {
-    const files = window.electron.getFiles();
-    
-    for (let i = 0; i < files.length; ++i) {
-      for (let j = i + 1; j < files.length; ++j) {
-        if (files[j - 1].type === "file" && files[j].type === "directory") {
-          var tmp = files[j - 1];
-          files[j - 1] = files[j];
-          files[j] = tmp;
+  const dirPath = "/Users/dimitrijevujcic/Desktop/Dimitrije/Bachelor\'s_degree/code-editor";
+
+  function processFilesAndFolders(filesAndFolders: any) {
+    filesAndFolders = filesAndFolders.children;
+
+    for(let i = 0; i < filesAndFolders.length; ++i) {
+      if (filesAndFolders[i].type === 'directory') {
+        processFilesAndFolders(filesAndFolders[i]);
+      }
+
+      for (let j = i + 1; j < filesAndFolders.length; ++j) {
+        if (filesAndFolders[j - 1].type === 'file' && filesAndFolders[j].type === 'directory') {
+          var tmp = filesAndFolders[j - 1];
+          filesAndFolders[j - 1] = filesAndFolders[j];
+          filesAndFolders[j] = tmp;
         }
       }
     }
     
-    filesRead.value = files;
+    return filesAndFolders;
+  }
+
+
+  function openFile(file: any) {
+    emit('add-tab', file);
   }
 
   onMounted(() => {
-    getFiles();
+    // @ts-ignore
+    window.electron.getFiles(dirPath).then((files: string) => {
+      filesToDisplay.value = processFilesAndFolders(JSON.parse(files));
+    }).catch((error: any) => {
+      console.error("Error occurred: ", error);
+      filesToDisplay.value = [];
+    })
   });
 
 </script>
@@ -32,9 +50,15 @@
     <div class="project-explorer-header">PROJECT EXPLORER</div>
     <hr>
     <div class="project-structure">
-      <!-- <Tree :value=""></Tree> -->
-      <div v-for="file in filesRead" :key="file.name">
-        <b-icon icon="chevron-right" font-scale="4"></b-icon> {{file.name}}
+      <div v-for="file in filesToDisplay" :key="file['name']">
+        <ProjectExplorerFolder
+          v-if="file['type'] === 'directory'"
+          :folder="file"
+          @add-tab="$emit('add-tab')"
+        />
+        <div v-else @dblclick="$emit('add-tab', file)">
+          {{ file['name'] }}
+        </div>
       </div>
     </div>
   </div>
@@ -52,6 +76,9 @@
 
     font-family: 'Monaco', sans-serif;
     color: white;
+
+    user-select: none;
+    overflow-y: auto;
   }
 
   .project-explorer-header {

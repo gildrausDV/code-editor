@@ -1,14 +1,31 @@
 <script setup lang="ts">
   import ProjectExplorer from './ProjectExplorer.vue';
+  import TabContainer from './TabContainer.vue';
+  import { ref } from 'vue';
+
+  const openTabs = ref<any[]>([]);
+
+  function addTab(file: any) {
+    openTabs.value.push(file);
+  }
+
+  // function removeTab(filePath: string) {
+  //     openTabs.splice(openTabs.indexOf(filePath), 1);
+  // }
+
 </script>
 
 <template>
   <div class="code-editor-container">
     <div class="project-explorer-container">
-      <ProjectExplorer/>
+      <ProjectExplorer
+        @add-tab="addTab"
+      />
     </div>
     <div class="code-container">
-
+      <TabContainer 
+        :open-tabs="openTabs"
+      />
     </div>
   </div>
 </template>

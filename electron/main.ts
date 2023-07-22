@@ -3,48 +3,87 @@ import path from 'node:path'
 
 const fs = require('fs');
 
-const readFiles = (directoryPath: string) => {
-  console.log('READ FILES');
+// const readFiles = async (directoryPath: string) => {
+//   //console.log('READ FILES');
+//   try {
+//     const fileNames = fs.readdirSync(directoryPath).map((fileOrFolder: any) => {
+//       const fullPath = path.join(directoryPath, fileOrFolder);
+//       if (fs.statSync(fullPath).isDirectory()) {
+//         return {
+//           type: 'directory',
+//           name: fileOrFolder,
+//           children: readFiles(fullPath),
+//           opened: false
+//         };
+//       } else {
+//         return {
+//           type: 'file',
+//           name: fileOrFolder
+//         };
+//       }
+//     });
+
+//     //console.log(JSON.stringify(fileNames));
+
+//     return fileNames;
+//   } catch (error) {
+//     console.error('Error reading folders:', error);
+//     return [];
+//   }
+// };
+
+const rootDirectory = {
+  type: 'directory',
+  name: '/',
+  children: [],
+  opened: false,
+  level: 0,
+  path: ''
+};;
+
+const readFiles = async (directoryPath: string, currentDirectory: any) => {
+  const splitPath = directoryPath.split("/");
+  rootDirectory.name = splitPath[splitPath.length - 1];
+  rootDirectory.path = directoryPath;
   try {
-    const fileNames = fs.readdirSync(directoryPath).map((fileOrFolder: any) => {
+    fs.readdirSync(directoryPath).map((fileOrFolder: any) => {
       const fullPath = path.join(directoryPath, fileOrFolder);
-      if (fs.statSync(fullPath).isDirectory()) {
-        return {
-          type: 'directory',
-          name: fileOrFolder,
-          children: readFiles(fullPath),
-        };
-      } else {
-        return {
-          type: 'file',
-          name: fileOrFolder,
-        };
-      }
+            if (fs.statSync(fullPath).isDirectory()) {
+              currentDirectory.children.push({
+                type: 'directory',
+                name: fileOrFolder,
+                children: [],
+                opened: false,
+                level: currentDirectory.level + 1,
+                path: fullPath
+              });
+
+              readFiles(fullPath, currentDirectory.children[currentDirectory.children.length - 1]);
+            } else {
+              currentDirectory.children.push({
+                type: 'file',
+                name: fileOrFolder,
+                level: currentDirectory.level + 1,
+                path: fullPath
+              });
+            }
     });
 
-    console.log(fileNames);
-
-    return fileNames;
+    return rootDirectory;
   } catch (error) {
     console.error('Error reading folders:', error);
-    return [];
   }
 };
 
-ipcMain.on('read-files', (event, dirPath) => {
-  try {
-    // Read all files and folders from the specified path recursively
-    const files = readFiles(dirPath);
+ipcMain.handle('get-files', async (_event, dirPath) => {
+  rootDirectory.children = [];
 
-    // Send the files array back to the renderer process
-    event.sender.send('files-read', files);
-  } catch (error) {
-    console.error('Error reading folders:', error);
-    // Send an empty array or an error message back to the renderer process if needed
-    event.sender.send('files-read', []);
-  }
+  return JSON.stringify(
+    await readFiles(dirPath, rootDirectory)
+  );
 });
 
+// readFiles("/Users/dimitrijevujcic/Desktop/Dimitrije/Bachelor\'s_degree/code-editor/test-project", rootDirectory);
 
 // The built directory structure
 //
@@ -71,6 +110,7 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true
     },
+    fullscreen: true
   })
 
   // Test active push message to Renderer-process.
@@ -90,4 +130,4 @@ app.on('window-all-closed', () => {
   win = null
 })
 
-app.whenReady().then(createWindow)
+app.whenReady().then(createWindow);
