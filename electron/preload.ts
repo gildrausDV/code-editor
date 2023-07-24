@@ -96,8 +96,6 @@ const { contextBridge, ipcRenderer } = require('electron');
 var filesRead: any[] = [];
 
 contextBridge.exposeInMainWorld('electron', {
-  readFilesFromPath: (dirPath: string) => {
-    ipcRenderer.send('read-files', dirPath);
-  },
-  getFiles: async (dirPath: string) => ipcRenderer.invoke('get-files', dirPath)
+  getFiles: async (dirPath: string) => ipcRenderer.invoke('get-files', dirPath),
+  loadFileContent: async (filePath: string) => ipcRenderer.invoke('read-file', filePath)
 });

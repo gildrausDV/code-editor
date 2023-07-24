@@ -1,17 +1,34 @@
 <script setup lang="ts">
+  import CodeArea from './CodeArea.vue';
   import ProjectExplorer from './ProjectExplorer.vue';
   import TabContainer from './TabContainer.vue';
   import { ref } from 'vue';
 
   const openTabs = ref<any[]>([]);
+  const filesToDisplay = ref<any[]>([]);
 
   function addTab(file: any) {
     openTabs.value.push(file);
   }
 
-  // function removeTab(filePath: string) {
-  //     openTabs.splice(openTabs.indexOf(filePath), 1);
-  // }
+  function removeTab(tab: any) {
+    openTabs.value.splice(openTabs.value.indexOf(tab), 1);
+
+    // Fix displayed file
+    if (filesToDisplay.value[0] === tab) {
+      filesToDisplay.value.pop();
+      
+      if (openTabs.value.length > 0) {
+        filesToDisplay.value.push(openTabs.value[0]);
+      }
+    }
+  }
+
+  function loadFile(tab: any) {
+    if (filesToDisplay.value.length > 0)
+      filesToDisplay.value.splice(0, 1);
+    filesToDisplay.value.push(tab);
+  }
 
 </script>
 
@@ -25,6 +42,11 @@
     <div class="code-container">
       <TabContainer 
         :open-tabs="openTabs"
+        @load-file="loadFile"
+        @remove-tab="removeTab"
+      />
+      <CodeArea
+        :files-to-display="filesToDisplay"
       />
     </div>
   </div>

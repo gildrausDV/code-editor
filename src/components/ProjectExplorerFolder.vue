@@ -13,6 +13,7 @@
   }
 
   function openFile(file: any) {
+    //console.log("TEST: " + JSON.stringify(file));
     emit('add-tab', file);
   }
 </script>

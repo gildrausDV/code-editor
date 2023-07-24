@@ -54,7 +54,7 @@
         <ProjectExplorerFolder
           v-if="file['type'] === 'directory'"
           :folder="file"
-          @add-tab="$emit('add-tab')"
+          @add-tab="openFile"
         />
         <div v-else @dblclick="$emit('add-tab', file)">
           {{ file['name'] }}

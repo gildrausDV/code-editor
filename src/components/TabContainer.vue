@@ -1,17 +1,23 @@
 <script setup lang="ts">
 
-    const { openTabs } = defineProps(['openTabs']);
+  const emit = defineEmits();
+  
+  const { openTabs } = defineProps(['openTabs']);
 
-    function openFile(_tab: any) {
-        
-    }
+  function openFile(tab: any) {
+      emit('load-file', tab);
+  }
+
+  function closeTab(tab: any) {
+    emit('remove-tab', tab);
+  }
 
 </script>
 
 <template>
   <div class="tab-container">
     <div v-for="tab in openTabs" class="tab" @click="openFile(tab)">
-        {{ tab.name }}
+        {{ tab.name }} <i class="bi bi-x close-btn" @click.stop="closeTab(tab)"></i>
     </div>
   </div>
 </template>
@@ -20,7 +26,7 @@
 
   .tab-container {
     width: 100%;
-    height: 30px;
+    height: 32px;
 
     background-color: #274472;
 

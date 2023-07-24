@@ -3,35 +3,6 @@ import path from 'node:path'
 
 const fs = require('fs');
 
-// const readFiles = async (directoryPath: string) => {
-//   //console.log('READ FILES');
-//   try {
-//     const fileNames = fs.readdirSync(directoryPath).map((fileOrFolder: any) => {
-//       const fullPath = path.join(directoryPath, fileOrFolder);
-//       if (fs.statSync(fullPath).isDirectory()) {
-//         return {
-//           type: 'directory',
-//           name: fileOrFolder,
-//           children: readFiles(fullPath),
-//           opened: false
-//         };
-//       } else {
-//         return {
-//           type: 'file',
-//           name: fileOrFolder
-//         };
-//       }
-//     });
-
-//     //console.log(JSON.stringify(fileNames));
-
-//     return fileNames;
-//   } catch (error) {
-//     console.error('Error reading folders:', error);
-//     return [];
-//   }
-// };
-
 const rootDirectory = {
   type: 'directory',
   name: '/',
@@ -39,7 +10,7 @@ const rootDirectory = {
   opened: false,
   level: 0,
   path: ''
-};;
+};
 
 const readFiles = async (directoryPath: string, currentDirectory: any) => {
   const splitPath = directoryPath.split("/");
@@ -83,7 +54,27 @@ ipcMain.handle('get-files', async (_event, dirPath) => {
   );
 });
 
-// readFiles("/Users/dimitrijevujcic/Desktop/Dimitrije/Bachelor\'s_degree/code-editor/test-project", rootDirectory);
+function readFileAsync(filePath: any, encoding: any) {
+  return new Promise((resolve, reject) => {
+    fs.readFile(filePath, encoding, (err: any, data: any) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(data);
+      }
+    });
+  });
+}
+
+ipcMain.handle('read-file', async (_event, filePath) => {
+  try {
+    const fileContent = await readFileAsync(filePath, 'utf8');
+    return fileContent;
+  } catch (error) {
+    console.error('Error reading file:', error);
+    return '';
+  }
+});
 
 // The built directory structure
 //
