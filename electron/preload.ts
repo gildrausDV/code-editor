@@ -97,5 +97,6 @@ var filesRead: any[] = [];
 
 contextBridge.exposeInMainWorld('electron', {
   getFiles: async (dirPath: string) => ipcRenderer.invoke('get-files', dirPath),
-  loadFileContent: async (filePath: string) => ipcRenderer.invoke('read-file', filePath)
+  loadFileContent: async (filePath: string) => ipcRenderer.invoke('read-file', filePath),
+  openProject: async () => ipcRenderer.invoke('open-project')
 });

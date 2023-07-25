@@ -21,12 +21,23 @@
 <template>
   <div>
     <div v-if="folder?.type === 'directory' && !folder?.opened" @click.stop="toggleFolder(folder)">
-        <i class="bi bi-chevron-right"></i>
-        {{folder?.name}}
+      <div class="hover-contrast">
+        <div>
+          <i class="bi bi-chevron-right"></i> 
+          {{folder?.name}}
+        </div>
+      </div>
     </div>
-    <div v-if="folder?.type ==='directory' && folder?.opened" @click.stop="toggleFolder(folder)">
-        <i class="bi bi-chevron-down"></i>
-        {{folder?.name}}
+    <div 
+      v-if="folder?.type ==='directory' && folder?.opened" 
+      @click.stop="toggleFolder(folder)"
+      >
+        <div class="hover-contrast">
+          <div>
+            <i class="bi bi-chevron-down"></i> 
+            {{folder?.name}}
+          </div>
+        </div>
 
         <div v-for="child in folder.children" class="project-explorer-file-name">
             <div v-for="_x in child.level">
@@ -37,12 +48,12 @@
                 :folder="child"
                 @add-tab="openFile"
             />
-            <div v-else @click.stop="toggleFolder(child)" @dblclick="openFile(child)">
+            <div v-else @click.stop="toggleFolder(child)" @dblclick="openFile(child)" class="hover-contrast">
                 {{ child['name'] }}
             </div>
         </div>
     </div>
-    <div v-if="folder?.type === 'file'" @dblclick="openFile(folder)">
+    <div v-if="folder?.type === 'file'" @dblclick="openFile(folder)" class="hover-contrast">
         {{folder?.name}}
     </div>
   </div>

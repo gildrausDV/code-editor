@@ -24,6 +24,24 @@
         refreshNumberOfLines();
     }
 
+    function handleTabKey(event: any) {
+        if (!codeAreaRef.value)
+            return;
+        
+        const tabCharacter = '\t';
+        const selection = window.getSelection();
+        const range = selection?.getRangeAt(0);
+
+        if (range) {
+            event.preventDefault();
+            const tabNode = document.createTextNode(tabCharacter);
+            range.insertNode(tabNode);
+            range.setStartAfter(tabNode);
+            range.setEndAfter(tabNode);
+            selection?.collapseToEnd();
+        }
+    }
+
     function clearCodeArea() {
         if (!codeAreaRef.value)
             return;
@@ -64,8 +82,9 @@
             <div class="code-area" 
                 :contenteditable="contentEditable" 
                 ref="codeAreaRef" 
-                @input="handleInput"
                 spellcheck="false"
+                @input="handleInput"
+                @keydown.tab.prevent="handleTabKey"
             >
                 
             </div>
@@ -110,6 +129,8 @@
         font-family: 'Fira Code', monospace;
         color: white;
         background-color: black;
+
+        white-space: pre;
     }
 
     .rows {

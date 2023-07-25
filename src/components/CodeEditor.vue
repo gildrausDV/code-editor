@@ -9,6 +9,11 @@
 
   function addTab(file: any) {
     openTabs.value.push(file);
+
+    // If only one tab, load it in code area
+    if (openTabs.value.length === 1) {
+      filesToDisplay.value.push(file);
+    }
   }
 
   function removeTab(tab: any) {

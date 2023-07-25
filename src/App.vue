@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import CodeEditor from './components/CodeEditor.vue'
+  import CodeEditor from './components/CodeEditor.vue'
 </script>
 
 <template>
