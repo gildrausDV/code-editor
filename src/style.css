@@ -14,14 +14,3 @@ body {
   width: 100%;
   height: 100vh;
 }
-
-.hover-contrast {
-  display: flex;
-  justify-content: space-between;
-  padding-right: 25px;
-  width: 100%;
-}
-
-.hover-contrast:hover {
-  color: black;
-}

@@ -17,7 +17,11 @@
 <template>
   <div class="tab-container">
     <div v-for="tab in openTabs" class="tab" @click="openFile(tab)">
-        {{ tab.name }} <i class="bi bi-x close-btn" @click.stop="closeTab(tab)"></i>
+        {{ tab.name }}
+        <div v-if="tab.edited">
+          &nbsp;<i class="bi bi-circle-fill"></i>&nbsp;
+        </div>
+        <i class="bi bi-x close-btn" @click.stop="closeTab(tab)"></i>
     </div>
   </div>
 </template>

@@ -98,5 +98,10 @@ var filesRead: any[] = [];
 contextBridge.exposeInMainWorld('electron', {
   getFiles: async (dirPath: string) => ipcRenderer.invoke('get-files', dirPath),
   loadFileContent: async (filePath: string) => ipcRenderer.invoke('read-file', filePath),
-  openProject: async () => ipcRenderer.invoke('open-project')
+  saveFileContent: async (filePath: string, fileContent: string) => 
+      ipcRenderer.invoke('save-file', filePath, fileContent),
+  openProject: async () => ipcRenderer.invoke('open-project'),
+  createFolder: async (dirPath: string) => ipcRenderer.invoke('create-folder', dirPath),
+  createFile: async (dirPath: string) => ipcRenderer.invoke('create-file', dirPath),
+  sendKeystroke: async (data: any) => ipcRenderer.invoke('send-keystroke', data)
 });

@@ -1,5 +1,8 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import path from 'node:path'
+import * as pty from 'node-pty'
+import * as os from 'os'
+var shell = os.platform() === "win32" ? "powershell.exe" : "bash";
 
 const fs = require('fs');
 
@@ -42,6 +45,11 @@ function createWindow() {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(process.env.DIST, 'index.html'))
   }
+
+  // ptyProcess.on('data', function(data) {
+  //     mainWindow.webContents.send("terminal.incomingData", data);
+  //     console.log("Data sent");
+  // });
 }
 
 app.on('window-all-closed', () => {
@@ -59,8 +67,8 @@ const rootDirectory = {
 
 const readFiles = async (directoryPath: string, currentDirectory: any) => {
   const splitPath = directoryPath.split("/");
-  rootDirectory.name = splitPath[splitPath.length - 1];
-  rootDirectory.path = directoryPath;
+  currentDirectory.name = splitPath[splitPath.length - 1];
+  currentDirectory.path = directoryPath;
   try {
     fs.readdirSync(directoryPath).map((fileOrFolder: any) => {
       const fullPath = path.join(directoryPath, fileOrFolder);
@@ -71,7 +79,8 @@ const readFiles = async (directoryPath: string, currentDirectory: any) => {
                 children: [],
                 opened: false,
                 level: currentDirectory.level + 1,
-                path: fullPath
+                path: fullPath,
+                sorted: false
               });
 
               readFiles(fullPath, currentDirectory.children[currentDirectory.children.length - 1]);
@@ -80,7 +89,8 @@ const readFiles = async (directoryPath: string, currentDirectory: any) => {
                 type: 'file',
                 name: fileOrFolder,
                 level: currentDirectory.level + 1,
-                path: fullPath
+                path: fullPath,
+                edited: false
               });
             }
     });
@@ -90,6 +100,19 @@ const readFiles = async (directoryPath: string, currentDirectory: any) => {
     console.error('Error reading folders:', error);
   }
 };
+
+var ptyProcess = pty.spawn(shell, [], {
+  name: "xterm-color",
+  cols: 80,
+  rows: 30,
+  cwd: process.env.HOME,
+  env: process.env
+});
+
+ipcMain.handle('send-keystroke', (data: any) => {
+  console.log("Received keystroke");
+  // ptyProcess.write(data);
+});
 
 ipcMain.handle('get-files', async (_event, dirPath) => {
   rootDirectory.children = [];
@@ -121,6 +144,16 @@ ipcMain.handle('read-file', async (_event, filePath) => {
   }
 });
 
+ipcMain.handle('save-file', async (_event, filePath: string, content: string) => {
+  fs.writeFile(filePath, content, (err: any) => {
+    if (err) {
+      console.error('Error saving the file:', err);
+    } else {
+      console.log('File saved successfully.');
+    }
+  });
+});
+
 ipcMain.handle('open-project', async (_event) => {
   if (!win)
     return;
@@ -137,6 +170,26 @@ ipcMain.handle('open-project', async (_event) => {
   }
 
   return selectedDirectory;
-})
+});
+
+ipcMain.handle('create-file', async (_event, dirPath: string) => {
+  fs.writeFile(dirPath, "", (err: any) => {
+    if (err) {
+      console.error('Error creating the file:', err);
+    } else {
+      console.log('File created successfully.');
+    }
+  });
+});
+
+ipcMain.handle('create-folder', async (_event, dirPath: string) => {
+  fs.mkdir(dirPath, { recursive: true }, (err: any) => {
+    if (err) {
+      console.error('Error creating the folder:', err);
+    } else {
+      console.log('Folder created successfully.');
+    }
+  });
+});
 
 app.whenReady().then(createWindow);

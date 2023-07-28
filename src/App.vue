@@ -1,9 +1,11 @@
 <script setup lang="ts">
-  import CodeEditor from './components/CodeEditor.vue'
+  // import CodeEditor from './components/CodeEditor.vue'
+  import Terminal from './components/Terminal.vue';
 </script>
 
 <template>
-  <CodeEditor/>
+  <!-- <CodeEditor/> -->
+  <Terminal/>
 </template>
 
 <style scoped>

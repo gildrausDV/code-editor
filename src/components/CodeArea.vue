@@ -8,8 +8,16 @@
     const codeAreaRef = ref(null);
     const contentEditable = ref(false);
 
+    var editedFilesToDisplay: boolean = false;
+
     onMounted(() => {
         refreshNumberOfLines();
+
+        window.addEventListener('keydown', (event) => {
+            if ((event.metaKey || event.ctrlKey) && event.key === 's') {
+                saveFile();
+            }
+        });
     });
 
     function refreshNumberOfLines() {
@@ -22,6 +30,9 @@
 
     function handleInput(_event: any) {
         refreshNumberOfLines();
+        //console.log(filesToDisplay[0]);
+        filesToDisplay[0].edited = true;
+        editedFilesToDisplay = true;
     }
 
     function handleTabKey(event: any) {
@@ -50,7 +61,25 @@
         contentEditable.value = false;
     }
 
+    function saveFile() {
+        if (!codeAreaRef.value)
+            return;
+        
+        // @ts-ignore
+        window.electron.saveFileContent(
+            filesToDisplay[0].path, 
+            (codeAreaRef.value as HTMLDivElement).innerText
+        );
+
+        filesToDisplay[0].edited = false;
+    }
+
     watch(filesToDisplay, async (newFilesToDisplay) => {
+        if (editedFilesToDisplay) {
+            editedFilesToDisplay = false;
+            return;
+        }
+
         if (newFilesToDisplay.length === 0) {
             clearCodeArea();
             return;
@@ -86,7 +115,7 @@
                 @input="handleInput"
                 @keydown.tab.prevent="handleTabKey"
             >
-                
+                <!-- File content -->
             </div>
         </div>
         <div class="right-panel">

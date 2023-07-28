@@ -4,22 +4,24 @@
 
   const emit = defineEmits();
 
-  const filesToDisplay = ref([]);
+  const filesToDisplay = ref<any>([]);
   const dirPath = ref(""); // "/Users/dimitrijevujcic/Desktop/Dimitrije/Bachelor\'s_degree/code-editor";
 
   function processFilesAndFolders(filesAndFolders: any) {
-    filesAndFolders = filesAndFolders.children;
-
-    for(let i = 0; i < filesAndFolders.length; ++i) {
-      if (filesAndFolders[i].type === 'directory') {
-        processFilesAndFolders(filesAndFolders[i]);
+    const children = filesAndFolders.children;
+    
+    for(let i = 0; i < children.length; ++i) {
+      if (children[i].type === 'directory') {
+        processFilesAndFolders(children[i]);
       }
+    }
 
-      for (let j = i + 1; j < filesAndFolders.length; ++j) {
-        if (filesAndFolders[j - 1].type === 'file' && filesAndFolders[j].type === 'directory') {
-          var tmp = filesAndFolders[j - 1];
-          filesAndFolders[j - 1] = filesAndFolders[j];
-          filesAndFolders[j] = tmp;
+    for(let i = 0; i < children.length; ++i) {
+      for (let j = 1; j < children.length; ++j) {
+        if (children[j - 1].type === 'file' && children[j].type === 'directory') {
+          var tmp = children[j - 1];
+          children[j - 1] = children[j];
+          children[j] = tmp;
         }
       }
     }
@@ -34,6 +36,7 @@
     // @ts-ignore
     window.electron.getFiles(dirPath.value).then((files: string) => {
       filesToDisplay.value = processFilesAndFolders(JSON.parse(files));
+      filesToDisplay.value.opened = true;
     }).catch((error: any) => {
       console.error("Error occurred: ", error);
       filesToDisplay.value = [];
@@ -66,16 +69,12 @@
     <div class="project-explorer-header">PROJECT EXPLORER</div>
     <hr>
     <div v-if="dirPath !== ''" class="project-structure">
-      <div v-for="file in filesToDisplay" :key="file['name']">
-        <ProjectExplorerFolder
-          v-if="file['type'] === 'directory'"
-          :folder="file"
+      <ProjectExplorerFolder
+          v-if="filesToDisplay.type === 'directory'"
+          :folder="filesToDisplay"
           @add-tab="openFile"
+          @reload-project="loadProject"
         />
-        <div v-else @dblclick="$emit('add-tab', file)" class="hover-contrast">
-          {{ file['name'] }}
-        </div>
-      </div>
     </div>
     <div v-else class="open-project">
       <button class="btn open-project-btn" @click="chooseProject">Open project</button>
