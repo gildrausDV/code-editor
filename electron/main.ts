@@ -1,8 +1,8 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import path from 'node:path'
-import * as pty from 'node-pty'
-import * as os from 'os'
-var shell = os.platform() === "win32" ? "powershell.exe" : "bash";
+// import * as pty from 'node-pty'
+// import * as os from 'os'
+// var shell = os.platform() === "win32" ? "powershell.exe" : "bash";
 
 const fs = require('fs');
 
@@ -101,18 +101,18 @@ const readFiles = async (directoryPath: string, currentDirectory: any) => {
   }
 };
 
-var ptyProcess = pty.spawn(shell, [], {
-  name: "xterm-color",
-  cols: 80,
-  rows: 30,
-  cwd: process.env.HOME,
-  env: process.env
-});
+// var ptyProcess = pty.spawn(shell, [], {
+//   name: "xterm-color",
+//   cols: 80,
+//   rows: 30,
+//   cwd: process.env.HOME,
+//   env: process.env
+// });
 
-ipcMain.handle('send-keystroke', (data: any) => {
-  console.log("Received keystroke");
-  // ptyProcess.write(data);
-});
+// ipcMain.handle('send-keystroke', (data: any) => {
+//   console.log("Received keystroke");
+//   // ptyProcess.write(data);
+// });
 
 ipcMain.handle('get-files', async (_event, dirPath) => {
   rootDirectory.children = [];

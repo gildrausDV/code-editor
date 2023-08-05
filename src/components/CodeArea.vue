@@ -1,6 +1,10 @@
 <script setup lang="ts">
 
-    import { onMounted, ref, watch } from 'vue';
+    import { onMounted, ref, watch/*, computed*/ } from 'vue';
+    import hljs from 'highlight.js/lib/core';
+    import xml from 'highlight.js/lib/languages/xml';
+    
+    hljs.registerLanguage('xml', xml);
 
     const { filesToDisplay } = defineProps(['filesToDisplay']);
 
@@ -28,11 +32,119 @@
         numberOfLines.value = Math.floor(height / 22.5);
     }
 
-    function handleInput(_event: any) {
+    function getCaretPosition() {
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            const clonedRange = range.cloneRange();
+            if (codeAreaRef.value) {
+                clonedRange.selectNodeContents(codeAreaRef.value);
+                clonedRange.setEnd(range.endContainer, range.endOffset);
+                return clonedRange.toString().length;
+            }
+        }
+        return 0; // If no selection, cursor is at the beginning
+    }
+
+    function moveCursorToPosition(position: number) {
+        const codeAreaRef = document.getElementById("code-area");
+        if (!codeAreaRef?.textContent || position < 0) 
+            return;
+
+        //const content = codeAreaRef.textContent;
+        const textNodes = getTextNodes(codeAreaRef);
+        let offset = 0;
+
+        for (let i = 0; i < textNodes.length; i++) {
+            const node = textNodes[i];
+            if (!node.textContent) 
+                continue;
+            const nodeLength = node.textContent.length;
+
+            if (offset + nodeLength >= position) {
+                const range = document.createRange();
+                range.setStart(node, position - offset);
+                range.collapse(true);
+
+                const selection = window.getSelection();
+                if (selection) {
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                    break;
+                }
+            }
+            offset += nodeLength;
+        }
+    }
+
+    function getTextNodes(node: Node): Node[] {
+        const textNodes: Node[] = [];
+
+        if (node.nodeType === Node.TEXT_NODE) {
+            textNodes.push(node);
+        } else {
+            const children = node.childNodes;
+            for (let i = 0; i < children.length; i++) {
+                textNodes.push(...getTextNodes(children[i]));
+            }
+        }
+
+        return textNodes;
+    }
+
+    // @ts-ignore
+    function highlightCode() {
+        if (codeAreaRef.value) {
+            const position = getCaretPosition();
+            const code = (codeAreaRef.value as HTMLDivElement).textContent;
+            // console.log("PRE: ", code);
+            // console.log("POSITION: ", position);
+            const language = 'xml';
+            const options = { language };
+            if (code) {
+                const highlighted = hljs.highlight(code, options).value;
+                (codeAreaRef.value as HTMLDivElement).innerHTML = highlighted;
+                // console.log("POSLE: ", highlighted);
+                // console.log((codeAreaRef.value as HTMLDivElement).innerText);
+                moveCursorToPosition(position);
+            }
+        }
+    }
+
+    function insertCharacterAtPosition(position: number, character: any) {
+        const codeAreaRef = document.getElementById("code-area");
+        if (!codeAreaRef || !codeAreaRef.textContent 
+            || position < 0 || position > codeAreaRef.textContent.length) 
+                return;
+
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            //range.setStart(codeAreaRef, position);
+            range.collapse(true);
+
+            const newNode = document.createTextNode(character);
+            range.insertNode(newNode);
+
+            // Move the cursor to the end of the inserted character
+            range.setStartAfter(newNode);
+            range.setEndAfter(newNode);
+
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+
+    function handleInput(event: any) {
         refreshNumberOfLines();
-        //console.log(filesToDisplay[0]);
         filesToDisplay[0].edited = true;
         editedFilesToDisplay = true;
+
+        if (event.inputType === 'insertParagraph' && codeAreaRef.value) {
+            insertCharacterAtPosition(getCaretPosition(), '\n');
+        }
+
+        highlightCode();
     }
 
     function handleTabKey(event: any) {
@@ -100,6 +212,23 @@
         }
     });
 
+    // const highlightedCode = computed(() => {
+    //     if (codeAreaRef.value) {
+    //         // Get the code from the editor
+    //         const code = (codeAreaRef.value as HTMLDivElement).textContent;
+    //         if (code) {
+    //             // Use "highlight.js" to apply syntax highlighting to the code
+    //             const language = 'xml'; // You can change this to support other languages
+    //             const options = { language };
+    //             const highlighted = hljs.highlight(code, options).value;
+    //             // Return the highlighted code as HTML
+    //             // alert("HIGHLIGHT");
+    //             return highlighted;
+    //         }
+    //     }
+    //     return '';
+    // });
+
 </script>
 
 <template>
@@ -108,15 +237,17 @@
             <div class="rows">
                 <div v-if="contentEditable" v-for="num in numberOfLines">{{ num }}</div>
             </div>
-            <div class="code-area" 
-                :contenteditable="contentEditable" 
-                ref="codeAreaRef" 
+            <code
+                class="code-area"
+                :contenteditable="contentEditable"
+                ref="codeAreaRef"
+                id="code-area"
                 spellcheck="false"
                 @input="handleInput"
                 @keydown.tab.prevent="handleTabKey"
             >
                 <!-- File content -->
-            </div>
+            </code>
         </div>
         <div class="right-panel">
 
