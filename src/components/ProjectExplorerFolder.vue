@@ -1,18 +1,18 @@
 <script setup lang="ts">
   import { ref, onMounted } from 'vue';
-  import CreateFileModal from './CreateFileModal.vue';
-  import CreateFolderModal from './CreateFolderModal.vue';
 
-  const emit = defineEmits(['add-tab', 'reload-project']);
+  const emit = defineEmits([
+    'add-tab',
+    'open-create-file-modal',
+    'open-create-folder-modal',
+    'reload-project'
+  ]);
 
   const { folder } = defineProps({
     folder: Object
   });
 
   const showFolderOptions = ref<any>(undefined);
-  const isOpenCreateFileModal = ref<boolean>(false);
-  const isOpenCreateFolderModal = ref<boolean>(false);
-  const dirPath = ref<string | undefined>(undefined);
 
   function toggleFolder(folder: any) {
     if (folder.type !== 'directory')
@@ -21,54 +21,20 @@
     folder.opened = !folder.opened;
   }
 
-  function openFile(file: any) {
-    emit('add-tab', file);
-  }
-
   function openCreateFileModal(path: string | undefined, event: Event) {
-    event.stopPropagation();
-    isOpenCreateFileModal.value = true;
-    dirPath.value = path;
+    if (event)
+      event.stopPropagation();
+    emit('open-create-file-modal', path);
   }
 
   function openCreateFolderModal(path: string | undefined, event: Event) {
-    event.stopPropagation();
-    isOpenCreateFolderModal.value = true;
-    dirPath.value = path;
+    if (event)
+      event.stopPropagation();
+    emit('open-create-folder-modal', path);
   }
 
-  function createFile(fileName: string | undefined) {
-    var path = dirPath.value;
-    isOpenCreateFileModal.value = false;
-    if (fileName === "" || path === undefined)
-      return;
-
-    path += "/" + fileName;
-
-    // @ts-ignore
-    window.electron.createFile(path).then(() => {
-      console.log("Created file");
-      emit('reload-project');
-    }).catch((error: any) => {
-      console.log("Error", error);
-    });
-  }
-
-  function createFolder(folderName: string | undefined) {
-    var path = dirPath.value;
-    isOpenCreateFolderModal.value = false;
-    if (folderName === "" || path === undefined)
-      return;
-
-    path += "/" + folderName;
-
-    // @ts-ignore
-    window.electron.createFolder(path).then(() => {
-      console.log("Created folder");
-      emit('reload-project');
-    }).catch((error: any) => {
-      console.log("Error", error);
-    });
+  function openFile(file: any) {
+    emit('add-tab', file);
   }
 
   onMounted(() => {
@@ -80,18 +46,6 @@
 </script>
 
 <template>
-    <!-- Modals -->
-    <CreateFileModal
-      :isOpen="isOpenCreateFileModal"
-      @confirm-file-name="createFile"
-      @close-modal="isOpenCreateFileModal = false"
-    />
-    <CreateFolderModal
-      :isOpen="isOpenCreateFolderModal"
-      @confirm-folder-name="createFolder"
-      @close-modal="isOpenCreateFolderModal = false"
-    />
-
     <div v-if="folder?.type === 'directory' && !folder?.opened" @click.stop="toggleFolder(folder)" class="project-explorer-container">
       <div class="hover-contrast" 
         @mouseenter="showFolderOptions = folder" 
@@ -140,6 +94,9 @@
                 v-if="child['type'] === 'directory'"
                 :folder="child"
                 @add-tab="openFile"
+                @open-create-file-modal="openCreateFileModal"
+                @open-create-folder-modal="openCreateFolderModal"
+                @reload-project="$emit('reload-project')"
             />
             <div v-else @click.stop="toggleFolder(child)" @dblclick="openFile(child)" class="hover-contrast">
                 {{ child['name'] }}

@@ -1,11 +1,18 @@
 <script setup lang="ts">
   import { ref, onMounted } from 'vue';
   import ProjectExplorerFolder from './ProjectExplorerFolder.vue'
+  import CreateFileModal from './CreateFileModal.vue';
+  import CreateFolderModal from './CreateFolderModal.vue';
 
-  const emit = defineEmits();
+  const emit = defineEmits([
+    'add-tab'
+  ]);
 
   const filesToDisplay = ref<any>([]);
+  const isOpenCreateFileModal = ref<boolean>(false);
+  const isOpenCreateFolderModal = ref<boolean>(false);
   const dirPath = ref(""); // "/Users/dimitrijevujcic/Desktop/Dimitrije/Bachelor\'s_degree/code-editor";
+  const createFileOrFolderPath = ref("");
 
   function processFilesAndFolders(filesAndFolders: any) {
     const children = filesAndFolders.children;
@@ -58,6 +65,52 @@
     emit('add-tab', file);
   }
 
+  function openCreateFileModal(path: string | undefined) {
+    isOpenCreateFileModal.value = true;
+    if (!path) return;
+    createFileOrFolderPath.value = path;
+  }
+
+  function openCreateFolderModal(path: string | undefined) {
+    isOpenCreateFolderModal.value = true;
+    if (!path) return;
+    createFileOrFolderPath.value = path;
+  }
+
+  function createFile(fileName: string | undefined) {
+    var path = createFileOrFolderPath.value;
+    isOpenCreateFileModal.value = false;
+    if (fileName === "" || path === undefined)
+      return;
+
+    path += "/" + fileName;
+
+    // @ts-ignore
+    window.electron.createFile(path).then(() => {
+      console.log("Created file " + path);
+      loadProject();
+    }).catch((error: any) => {
+      console.log("Error", error);
+    });
+  }
+
+  function createFolder(folderName: string | undefined) {
+    var path = createFileOrFolderPath.value;
+    isOpenCreateFolderModal.value = false;
+    if (folderName === "" || path === undefined)
+      return;
+
+    path += "/" + folderName;
+
+    // @ts-ignore
+    window.electron.createFolder(path).then(() => {
+      console.log("Created folder");
+      loadProject();
+    }).catch((error: any) => {
+      console.log("Error", error);
+    });
+  }
+
   onMounted(() => {
     loadProject();
   });
@@ -65,6 +118,19 @@
 </script>
 
 <template>
+  
+  <!-- Modals -->
+  <CreateFileModal
+    :isOpen="isOpenCreateFileModal"
+    @confirm-file-name="createFile"
+    @close-modal="isOpenCreateFileModal = false"
+  />
+  <CreateFolderModal
+    :isOpen="isOpenCreateFolderModal"
+    @confirm-folder-name="createFolder"
+    @close-modal="isOpenCreateFolderModal = false"
+  />
+
   <div class="project-explorer">
     <div class="project-explorer-header">PROJECT EXPLORER</div>
     <hr>
@@ -74,6 +140,8 @@
           :folder="filesToDisplay"
           @add-tab="openFile"
           @reload-project="loadProject"
+          @open-create-file-modal="openCreateFileModal"
+          @open-create-folder-modal="openCreateFolderModal"
         />
     </div>
     <div v-else class="open-project">

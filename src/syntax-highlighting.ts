@@ -5,6 +5,9 @@ import javascript from 'highlight.js/lib/languages/javascript';
 import python from 'highlight.js/lib/languages/python';
 import typescript from 'highlight.js/lib/languages/typescript';
 import cpp from 'highlight.js/lib/languages/cpp';
+import c from 'highlight.js/lib/languages/c';
+import java from 'highlight.js/lib/languages/java';
+import csharp from 'highlight.js/lib/languages/csharp';
 
 function getFileExtension(fileName: string) {
     const arr = fileName.split('.');
@@ -32,6 +35,15 @@ export function syntaxHighlighting(code: string, fileName: string) {
     } else if (fileExtension === 'cpp') {
         language = 'cpp';
         hljs.registerLanguage('cpp', cpp);
+    } else if (fileExtension === 'c') {
+        language = 'c';
+        hljs.registerLanguage('c', c);
+    } else if (fileExtension === 'java') {
+        language = 'java';
+        hljs.registerLanguage('java', java);
+    } else if (fileExtension === 'cs') {
+        language = 'cs';
+        hljs.registerLanguage('cs', csharp);
     }
 
     const options = { language };
