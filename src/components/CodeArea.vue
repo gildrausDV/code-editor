@@ -1,10 +1,13 @@
 <script setup lang="ts">
 
     import { onMounted, ref, watch/*, computed*/ } from 'vue';
-    import hljs from 'highlight.js/lib/core';
-    import xml from 'highlight.js/lib/languages/xml';
-    
-    hljs.registerLanguage('xml', xml);
+    import { syntaxHighlighting } from '../syntax-highlighting';
+    // import hljs from 'highlight.js/lib/core';
+    // import xml from 'highlight.js/lib/languages/xml';
+    // import javascript from 'highlight.js/lib/languages/javascript';
+    // import python from 'highlight.js/lib/languages/python';
+    // import typescript from 'highlight.js/lib/languages/typescript';
+    // import cpp from 'highlight.js/lib/languages/cpp';
 
     const { filesToDisplay } = defineProps(['filesToDisplay']);
 
@@ -92,22 +95,18 @@
         return textNodes;
     }
 
-    // @ts-ignore
-    function highlightCode() {
+    function highlightCode(codeAreaRef: any, fileName: string) {
         if (codeAreaRef.value) {
             const position = getCaretPosition();
-            const code = (codeAreaRef.value as HTMLDivElement).textContent;
-            // console.log("PRE: ", code);
-            // console.log("POSITION: ", position);
-            const language = 'xml';
-            const options = { language };
-            if (code) {
-                const highlighted = hljs.highlight(code, options).value;
+            const code = (codeAreaRef.value as HTMLDivElement).innerText;
+            if (!code)
+                return;
+            
+            const highlighted = syntaxHighlighting(code, fileName);
+            if (highlighted)
                 (codeAreaRef.value as HTMLDivElement).innerHTML = highlighted;
-                // console.log("POSLE: ", highlighted);
-                // console.log((codeAreaRef.value as HTMLDivElement).innerText);
-                moveCursorToPosition(position);
-            }
+
+            moveCursorToPosition(position);
         }
     }
 
@@ -144,7 +143,7 @@
             insertCharacterAtPosition(getCaretPosition(), '\n');
         }
 
-        highlightCode();
+        highlightCode(codeAreaRef, filesToDisplay[0].name);
     }
 
     function handleTabKey(event: any) {
@@ -207,6 +206,7 @@
                 refreshNumberOfLines();
             }
             contentEditable.value = true;
+            highlightCode(codeAreaRef, filesToDisplay[0].name);
         } catch (error) {
             console.error("Error occurred:", error);
         }
