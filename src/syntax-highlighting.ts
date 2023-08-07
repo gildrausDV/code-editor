@@ -9,21 +9,69 @@ import c from 'highlight.js/lib/languages/c';
 import java from 'highlight.js/lib/languages/java';
 import csharp from 'highlight.js/lib/languages/csharp';
 
+import * as esprima from 'esprima';
+
 function getFileExtension(fileName: string) {
     const arr = fileName.split('.');
     return arr[arr.length - 1];
 }
 
-export function syntaxHighlighting(code: string, fileName: string) {
+function javascriptCodeParser(script: string | undefined) {
+    if (!script)
+        return;
+
+    var result = null;
+
+    try {
+        result = esprima.parseScript(script, { loc: true });
+        result = {
+            "status": "Success",
+            "result": result
+        }
+    } catch (error: any) {
+        console.log("Error parsing", error);
+        result = {
+            "status": "Failure",
+            "errors": [
+                {
+                    "descrription": error.description,
+                    "line": error.lineNumber
+                }
+            ]
+        }
+    }
+
+    return result;
+}
+
+function addUnderliningForParsingErrors(code: string, parsingResult: any) {
+    if (parsingResult.status === "Success")
+        return code;
+
+    // Underline first line
+    console.log("Number of lines ", code.split("\n").length);
+    const codeLines = code.split("\n");
+    const lineIndex = parsingResult.errors[0].line - 1;
+    codeLines[lineIndex] = "<div class='error-line'>" + codeLines[lineIndex] + "</div>";
+
+    return codeLines.join("\n");
+}
+
+export function syntaxHighlightingAndParsing(code: string, fileName: string) {
     var language = '';
     const fileExtension = getFileExtension(fileName);
     if (fileExtension === undefined || fileExtension === "")
         return;
 
+    var parsingResult: Object | undefined = undefined;
+
     if (fileExtension === 'html') {
         language = 'xml';
         hljs.registerLanguage('xml', xml);
     } else if (fileExtension === 'js') {
+        // Call javascript parser
+        parsingResult = javascriptCodeParser(code);
+
         language = 'javascript';
         hljs.registerLanguage('javascript', javascript);
     } else if (fileExtension === 'ts') {
@@ -47,5 +95,5 @@ export function syntaxHighlighting(code: string, fileName: string) {
     }
 
     const options = { language };
-    return hljs.highlight(code, options).value;
+    return addUnderliningForParsingErrors(hljs.highlight(code, options).value, parsingResult);
 }

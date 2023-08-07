@@ -1,13 +1,7 @@
 <script setup lang="ts">
 
     import { onMounted, ref, watch/*, computed*/ } from 'vue';
-    import { syntaxHighlighting } from '../syntax-highlighting';
-    // import hljs from 'highlight.js/lib/core';
-    // import xml from 'highlight.js/lib/languages/xml';
-    // import javascript from 'highlight.js/lib/languages/javascript';
-    // import python from 'highlight.js/lib/languages/python';
-    // import typescript from 'highlight.js/lib/languages/typescript';
-    // import cpp from 'highlight.js/lib/languages/cpp';
+    import { syntaxHighlightingAndParsing } from '../syntax-highlighting';
 
     const { filesToDisplay } = defineProps(['filesToDisplay']);
 
@@ -25,6 +19,8 @@
                 saveFile();
             }
         });
+
+        
     });
 
     function refreshNumberOfLines() {
@@ -46,7 +42,7 @@
                 return clonedRange.toString().length;
             }
         }
-        return 0; // If no selection, cursor is at the beginning
+        return 0;
     }
 
     function moveCursorToPosition(position: number) {
@@ -54,7 +50,6 @@
         if (!codeAreaRef?.textContent || position < 0) 
             return;
 
-        //const content = codeAreaRef.textContent;
         const textNodes = getTextNodes(codeAreaRef);
         let offset = 0;
 
@@ -102,7 +97,7 @@
             if (!code)
                 return;
             
-            const highlighted = syntaxHighlighting(code, fileName);
+            const highlighted = syntaxHighlightingAndParsing(code, fileName);
             if (highlighted)
                 (codeAreaRef.value as HTMLDivElement).innerHTML = highlighted;
 
@@ -119,13 +114,11 @@
         const selection = window.getSelection();
         if (selection && selection.rangeCount > 0) {
             const range = selection.getRangeAt(0);
-            //range.setStart(codeAreaRef, position);
             range.collapse(true);
 
             const newNode = document.createTextNode(character);
             range.insertNode(newNode);
 
-            // Move the cursor to the end of the inserted character
             range.setStartAfter(newNode);
             range.setEndAfter(newNode);
 
@@ -212,23 +205,6 @@
         }
     });
 
-    // const highlightedCode = computed(() => {
-    //     if (codeAreaRef.value) {
-    //         // Get the code from the editor
-    //         const code = (codeAreaRef.value as HTMLDivElement).textContent;
-    //         if (code) {
-    //             // Use "highlight.js" to apply syntax highlighting to the code
-    //             const language = 'xml'; // You can change this to support other languages
-    //             const options = { language };
-    //             const highlighted = hljs.highlight(code, options).value;
-    //             // Return the highlighted code as HTML
-    //             // alert("HIGHLIGHT");
-    //             return highlighted;
-    //         }
-    //     }
-    //     return '';
-    // });
-
 </script>
 
 <template>
@@ -250,12 +226,15 @@
             </code>
         </div>
         <div class="right-panel">
-
+            <button class="btn btn-dark parse-button" @click="">A</button>
         </div>
     </div>
 </template>
 
 <style scoped>
+    .parse-button {
+        width: 40px;
+    }
 
     .rows-and-code-container {
         width: 100%;
