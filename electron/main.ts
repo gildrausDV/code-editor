@@ -62,7 +62,10 @@ const rootDirectory = {
 };
 
 const readFiles = async (directoryPath: string, currentDirectory: any) => {
-  const splitPath = directoryPath.split("/");
+  // const splitPath = directoryPath.split("/");
+  const splitPath = directoryPath.split(
+      process.platform === "win32" ? "\\" : "/"
+    );
   currentDirectory.name = splitPath[splitPath.length - 1];
   currentDirectory.path = directoryPath;
   try {
