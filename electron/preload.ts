@@ -103,5 +103,7 @@ contextBridge.exposeInMainWorld('electron', {
   openProject: async () => ipcRenderer.invoke('open-project'),
   createFolder: async (dirPath: string) => ipcRenderer.invoke('create-folder', dirPath),
   createFile: async (dirPath: string) => ipcRenderer.invoke('create-file', dirPath),
-  sendKeystroke: async (data: any) => ipcRenderer.invoke('send-keystroke', data)
+  sendKeystroke: async (data: any) => ipcRenderer.invoke('send-keystroke', data),
+  pythonCodeParser: (code: string) => ipcRenderer.invoke('python-code-parser', code),
+  javaCodeParser: (code: string) => ipcRenderer.invoke('java-code-parser', code)
 });

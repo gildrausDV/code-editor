@@ -90,14 +90,14 @@
         return textNodes;
     }
 
-    function highlightCode(codeAreaRef: any, fileName: string) {
+    async function highlightCode(codeAreaRef: any, fileName: string) {
         if (codeAreaRef.value) {
             const position = getCaretPosition();
             const code = (codeAreaRef.value as HTMLDivElement).innerText;
             if (!code)
                 return;
             
-            const highlighted = syntaxHighlightingAndParsing(code, fileName);
+            const highlighted = await syntaxHighlightingAndParsing(code, fileName);
             if (highlighted)
                 (codeAreaRef.value as HTMLDivElement).innerHTML = highlighted;
 

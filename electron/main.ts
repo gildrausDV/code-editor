@@ -1,8 +1,7 @@
 import { app, BrowserWindow, ipcMain, dialog } from 'electron'
 import path from 'node:path'
-// import * as pty from 'node-pty'
-// import * as os from 'os'
-// var shell = os.platform() === "win32" ? "powershell.exe" : "bash";
+import { spawn } from 'child_process';
+import { parse } from 'java-parser';
 
 const fs = require('fs');
 
@@ -32,7 +31,9 @@ function createWindow() {
       contextIsolation: true
     },
     fullscreen: true
-  })
+  });
+
+  win.webContents.openDevTools();
 
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
@@ -45,11 +46,6 @@ function createWindow() {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(process.env.DIST, 'index.html'))
   }
-
-  // ptyProcess.on('data', function(data) {
-  //     mainWindow.webContents.send("terminal.incomingData", data);
-  //     console.log("Data sent");
-  // });
 }
 
 app.on('window-all-closed', () => {
@@ -100,19 +96,6 @@ const readFiles = async (directoryPath: string, currentDirectory: any) => {
     console.error('Error reading folders:', error);
   }
 };
-
-// var ptyProcess = pty.spawn(shell, [], {
-//   name: "xterm-color",
-//   cols: 80,
-//   rows: 30,
-//   cwd: process.env.HOME,
-//   env: process.env
-// });
-
-// ipcMain.handle('send-keystroke', (data: any) => {
-//   console.log("Received keystroke");
-//   // ptyProcess.write(data);
-// });
 
 ipcMain.handle('get-files', async (_event, dirPath) => {
   rootDirectory.children = [];
@@ -190,6 +173,44 @@ ipcMain.handle('create-folder', async (_event, dirPath: string) => {
       console.log('Folder created successfully.');
     }
   });
+});
+
+ipcMain.handle('python-code-parser', async (_event, pythonCode: string) => {
+  return new Promise((resolve: any, reject: any) => {
+    const parserScriptPath = path.join(__dirname, '../src/parsers/python-parser.py');
+
+    const pythonProcess = spawn('python3', [parserScriptPath, pythonCode]);
+    let pythonStdout = '';
+    let pythonStderr = '';
+
+    pythonProcess.stdout.on('data', (data) => {
+      pythonStdout += data.toString();
+      pythonStdout = JSON.parse(pythonStdout);
+    });
+
+    pythonProcess.stderr.on('data', (data) => {
+      pythonStderr += data.toString();
+    });
+
+    pythonProcess.on('exit', (code) => {
+        if (code === 0) {
+          resolve(pythonStdout);
+        } else {
+          reject(new Error(`Python process exited with code ${code}: ${pythonStderr}`));
+        }
+    });
+  });
+});
+
+ipcMain.handle('java-code-parser', (_event, javaCode: string) => {
+  var parsedResult: any = '';
+  try {
+    parsedResult = parse(javaCode);
+    console.log(parsedResult.children.ordinaryCompilationUnit[0]);
+  } catch (error) {
+      console.error('Java code parsing error:', error);
+  }
+  return 'parsedResult';
 });
 
 app.whenReady().then(createWindow);

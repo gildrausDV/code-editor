@@ -44,8 +44,36 @@ function javascriptCodeParser(script: string | undefined) {
     return result;
 }
 
+async function pythonCodeParser(script: string | undefined) {
+    if (!script)
+        return;
+
+    try {
+        // @ts-ignore
+        const parsingResult: Object = await window.electron.pythonCodeParser(script);
+        return parsingResult;
+    } catch (error) {
+        console.log("Code parser failed: ", error);
+        throw error;
+    }
+}
+
+async function javaCodeParser(script: string | undefined) {
+    if (!script)
+        return;
+
+    try {
+        // @ts-ignore
+        const parsingResult: Object = await window.electron.javaCodeParser(script);
+        return parsingResult;
+    } catch (error) {
+        console.log("Code parser failed: ", error);
+        throw error;
+    }
+}
+
 function addUnderliningForParsingErrors(code: string, parsingResult: any) {
-    if (parsingResult.status === "Success")
+    if (!parsingResult || parsingResult.status === "Success")
         return code;
 
     // Underline first line
@@ -57,7 +85,7 @@ function addUnderliningForParsingErrors(code: string, parsingResult: any) {
     return codeLines.join("\n");
 }
 
-export function syntaxHighlightingAndParsing(code: string, fileName: string) {
+export async function syntaxHighlightingAndParsing(code: string, fileName: string) {
     var language = '';
     const fileExtension = getFileExtension(fileName);
     if (fileExtension === undefined || fileExtension === "")
@@ -78,6 +106,9 @@ export function syntaxHighlightingAndParsing(code: string, fileName: string) {
         language = 'typescript';
         hljs.registerLanguage('typescript', typescript);
     } else if (fileExtension === 'py') {
+        // Call python parser
+        parsingResult = await pythonCodeParser(code);
+
         language = 'python';
         hljs.registerLanguage('python', python);
     } else if (fileExtension === 'cpp') {
@@ -87,6 +118,8 @@ export function syntaxHighlightingAndParsing(code: string, fileName: string) {
         language = 'c';
         hljs.registerLanguage('c', c);
     } else if (fileExtension === 'java') {
+        const x = await javaCodeParser(code);
+        console.log("X", x);
         language = 'java';
         hljs.registerLanguage('java', java);
     } else if (fileExtension === 'cs') {
