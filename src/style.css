@@ -19,6 +19,8 @@ body {
 
 .error-line {
   position: relative;
+  width: fit-content;
+  min-width: 5px;
 }
 
 .error-line::after {
@@ -28,16 +30,17 @@ body {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(to right, transparent 0%, red 25%, transparent 50%);
+  background: red; /*linear-gradient(to right, transparent 0%, red 25%, transparent 50%);*/
   background-size: 200% 100%;
-  animation: wave-animation 2s infinite;
+  /* animation: wave-animation 2s infinite; */
 }
-@keyframes wave-animation {
+
+/* @keyframes wave-animation {
   0%, 100% {
     background-position: 0% 0%;
   }
   50% {
     background-position: 100% 0%;
   }
-}
+} */
 

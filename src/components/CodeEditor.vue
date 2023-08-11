@@ -2,6 +2,7 @@
   import CodeArea from './CodeArea.vue';
   import ProjectExplorer from './ProjectExplorer.vue';
   import TabContainer from './TabContainer.vue';
+  import Terminal from './Terminal.vue';
   import { ref } from 'vue';
 
   const openTabs = ref<any[]>([]);
@@ -53,6 +54,7 @@
       <CodeArea
         :files-to-display="filesToDisplay"
       />
+      <Terminal/>
     </div>
   </div>
 </template>

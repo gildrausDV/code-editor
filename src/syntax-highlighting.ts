@@ -10,6 +10,7 @@ import java from 'highlight.js/lib/languages/java';
 import csharp from 'highlight.js/lib/languages/csharp';
 
 import * as esprima from 'esprima';
+// import { parse } from '@typescript-eslint/parser';
 
 function getFileExtension(fileName: string) {
     const arr = fileName.split('.');
@@ -29,7 +30,6 @@ function javascriptCodeParser(script: string | undefined) {
             "result": result
         }
     } catch (error: any) {
-        console.log("Error parsing", error);
         result = {
             "status": "Failure",
             "errors": [
@@ -42,6 +42,18 @@ function javascriptCodeParser(script: string | undefined) {
     }
 
     return result;
+}
+
+function typescriptCodeParser(script: string | undefined) {
+    if (!script)
+        return;
+
+    // const ast = parse(script, {
+    //     sourceType: 'module',
+    //     ecmaVersion: 2021,
+    // });
+    
+    // console.log(ast);
 }
 
 async function pythonCodeParser(script: string | undefined) {
@@ -77,7 +89,7 @@ function addUnderliningForParsingErrors(code: string, parsingResult: any) {
         return code;
 
     // Underline first line
-    console.log("Number of lines ", code.split("\n").length);
+    //console.log("Number of lines ", code.split("\n").length);
     const codeLines = code.split("\n");
     const lineIndex = parsingResult.errors[0].line - 1;
     codeLines[lineIndex] = "<div class='error-line'>" + codeLines[lineIndex] + "</div>";
@@ -103,6 +115,9 @@ export async function syntaxHighlightingAndParsing(code: string, fileName: strin
         language = 'javascript';
         hljs.registerLanguage('javascript', javascript);
     } else if (fileExtension === 'ts') {
+        // Call typescript parser
+        typescriptCodeParser(code);
+
         language = 'typescript';
         hljs.registerLanguage('typescript', typescript);
     } else if (fileExtension === 'py') {

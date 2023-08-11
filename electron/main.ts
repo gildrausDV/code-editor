@@ -4,6 +4,9 @@ import { spawn } from 'child_process';
 import { parse } from 'java-parser';
 
 const fs = require('fs');
+const pty = require('node-pty');
+const os = require('os');
+var shell = os.platform() === "win32" ? "powershell.exe" : "bash";
 
 // The built directory structure
 //
@@ -31,6 +34,23 @@ function createWindow() {
       contextIsolation: true
     },
     fullscreen: true
+  });
+
+  var ptyProcess = pty.spawn(shell, [], {
+    name: "xterm-color",
+    cols: 80,
+    rows: 30,
+    cwd: process.env.HOME,
+    env: process.env
+  });
+
+  ptyProcess.on('data', function(data: any) {
+    win?.webContents.send("terminal.incomingData", data);
+    console.log("Data sent", data);
+  });
+  
+  ipcMain.handle("terminal-keystroke", (_event, key) => {
+      ptyProcess.write(key);
   });
 
   win.webContents.openDevTools();

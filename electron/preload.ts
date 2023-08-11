@@ -91,7 +91,7 @@ window.onmessage = ev => {
 
 setTimeout(removeLoading, 4999)
 
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, ipcMain } = require('electron');
 
 var filesRead: any[] = [];
 
@@ -103,7 +103,15 @@ contextBridge.exposeInMainWorld('electron', {
   openProject: async () => ipcRenderer.invoke('open-project'),
   createFolder: async (dirPath: string) => ipcRenderer.invoke('create-folder', dirPath),
   createFile: async (dirPath: string) => ipcRenderer.invoke('create-file', dirPath),
-  sendKeystroke: async (data: any) => ipcRenderer.invoke('send-keystroke', data),
+
+  // Terminal invokes
+  sendKeyStroke: async (data: any) => ipcRenderer.invoke('terminal-keystroke', data),
+
+  terminalIncomingData: (func: Function) => {
+    ipcRenderer.on("terminal.incomingData", (event, ...args) => func(event, ...args));       
+  },
+
+  // Parsers
   pythonCodeParser: (code: string) => ipcRenderer.invoke('python-code-parser', code),
   javaCodeParser: (code: string) => ipcRenderer.invoke('java-code-parser', code)
 });

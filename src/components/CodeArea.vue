@@ -10,7 +10,6 @@
     const contentEditable = ref(false);
 
     var editedFilesToDisplay: boolean = false;
-    var timeout: any = undefined;
 
     onMounted(() => {
         refreshNumberOfLines();
@@ -101,7 +100,7 @@
             const highlighted = await syntaxHighlightingAndParsing(code, fileName);
             if (highlighted)
                 (codeAreaRef.value as HTMLDivElement).innerHTML = highlighted;
-                
+
             moveCursorToPosition(position);
         }
     }
@@ -128,15 +127,6 @@
         }
     }
 
-    function debounce() {
-        if (timeout !== undefined)
-            clearTimeout(timeout);
-
-        timeout = setTimeout(() => {
-            highlightCode(codeAreaRef, filesToDisplay[0].name);
-        }, 500);
-    }
-
     function handleInput(event: any) {
         refreshNumberOfLines();
         filesToDisplay[0].edited = true;
@@ -146,8 +136,7 @@
             insertCharacterAtPosition(getCaretPosition(), '\n');
         }
 
-        // Highlight code 500ms after last input
-        debounce();
+        highlightCode(codeAreaRef, filesToDisplay[0].name);
     }
 
     function handleTabKey(event: any) {
@@ -237,7 +226,7 @@
             </code>
         </div>
         <div class="right-panel">
-            <button class="btn btn-dark parse-button" @click="">A</button>
+            
         </div>
     </div>
 </template>
@@ -258,7 +247,7 @@
 
     .code-area-container {
         width: 100%;
-        height: 98%;
+        height: 68%;
 
         display: flex;
         overflow: auto;
