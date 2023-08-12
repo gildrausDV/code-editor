@@ -5,7 +5,8 @@
   import CreateFolderModal from './CreateFolderModal.vue';
 
   const emit = defineEmits([
-    'add-tab'
+    'add-tab',
+    'select-project'
   ]);
 
   const filesToDisplay = ref<any>([]);
@@ -39,6 +40,7 @@
   function loadProject() {
     if (dirPath.value === "")
       return;
+    emit('select-project', dirPath.value);
     
     // @ts-ignore
     window.electron.getFiles(dirPath.value).then((files: string) => {

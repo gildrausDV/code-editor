@@ -8,6 +8,8 @@
   const openTabs = ref<any[]>([]);
   const filesToDisplay = ref<any[]>([]);
 
+  const dirPath = ref<string[]>([]);
+
   function addTab(file: any) {
     openTabs.value.push(file);
 
@@ -36,6 +38,11 @@
     filesToDisplay.value.push(tab);
   }
 
+  function selectProject(path: string) {
+    console.log("SELECT PROJECT");
+    dirPath.value = [path];
+  }
+
 </script>
 
 <template>
@@ -43,6 +50,7 @@
     <div class="project-explorer-container">
       <ProjectExplorer
         @add-tab="addTab"
+        @select-project="selectProject"
       />
     </div>
     <div class="code-container">
@@ -54,7 +62,9 @@
       <CodeArea
         :files-to-display="filesToDisplay"
       />
-      <Terminal/>
+      <Terminal
+        :dir-path="dirPath"
+      />
     </div>
   </div>
 </template>

@@ -46,7 +46,7 @@ function createWindow() {
 
   ptyProcess.on('data', function(data: any) {
     win?.webContents.send("terminal.incomingData", data);
-    console.log("Data sent", data);
+    // console.log("Data sent", data);
   });
   
   ipcMain.handle("terminal-keystroke", (_event, key) => {
