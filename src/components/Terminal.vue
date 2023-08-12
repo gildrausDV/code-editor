@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import { ref, onMounted, watch } from 'vue';
+  import { highlightBash } from '../syntax-highlighting';
 
   const dirPath = defineProps(['dirPath']);
 
@@ -24,19 +25,24 @@
     window.electron.terminalIncomingData((_event: any, data: any) => {
       if (data === "" || data === "\r\n" || JSON.stringify(data) === "\r\n") 
         return;
+
       protectedContent.value += lastTerminalOutput.value;
+      // protectedContent.value += highlightBash(lastTerminalOutput.value);
       lastTerminalOutput.value = data;
+
+      // test
+      const hc = highlightBash(protectedContent.value);
+      console.log(hc);
+      (document.getElementById("output") as HTMLDivElement).innerHTML = hc;
     });
 
     // @ts-ignore
     window.electron.sendKeyStroke("\n");
   });
 
-  watch(dirPath, (newDirPath) => {
+  watch(dirPath, (_newDirPath) => {
       if (dirPath.dirPath[0] === "")
         return;
-      console.log("NEW DIR PATH: ", JSON.stringify(newDirPath));
-      console.log(JSON.stringify(dirPath.dirPath[0]));
 
       // @ts-ignore
       window.electron.sendKeyStroke("cd " + dirPath.dirPath[0] + "\n");
@@ -46,8 +52,8 @@
 
 <template>
   <div class="terminal-container">
-    <div class="terminal-output">
-      {{ protectedContent }}
+    <div class="terminal-output" id="output">
+      <!-- {{ protectedContent }} -->
     </div>
     <div class="terminal">
       <div class="terminal-protected" contenteditable="false">{{ lastTerminalOutput }}</div>

@@ -8,6 +8,7 @@ import cpp from 'highlight.js/lib/languages/cpp';
 import c from 'highlight.js/lib/languages/c';
 import java from 'highlight.js/lib/languages/java';
 import csharp from 'highlight.js/lib/languages/csharp';
+import bash from 'highlight.js/lib/languages/bash';
 
 import * as esprima from 'esprima';
 // import { parse } from '@typescript-eslint/parser';
@@ -144,4 +145,14 @@ export async function syntaxHighlightingAndParsing(code: string, fileName: strin
 
     const options = { language };
     return addUnderliningForParsingErrors(hljs.highlight(code, options).value, parsingResult);
+}
+
+export function highlightBash(content: string) {
+    if (content === "")
+        return "";
+
+    const language = 'bash';
+    hljs.registerLanguage('bash', bash);
+    
+    return hljs.highlight(content, { language }).value;
 }

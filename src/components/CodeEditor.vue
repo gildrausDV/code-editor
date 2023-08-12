@@ -39,7 +39,6 @@
   }
 
   function selectProject(path: string) {
-    console.log("SELECT PROJECT");
     dirPath.value = [path];
   }
 
