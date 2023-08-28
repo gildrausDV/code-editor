@@ -3,6 +3,7 @@
   import ProjectExplorerFolder from './ProjectExplorerFolder.vue'
   import CreateFileModal from './CreateFileModal.vue';
   import CreateFolderModal from './CreateFolderModal.vue';
+  import DeleteModal from './DeleteModal.vue';
 
   const emit = defineEmits([
     'add-tab',
@@ -12,8 +13,10 @@
   const filesToDisplay = ref<any>([]);
   const isOpenCreateFileModal = ref<boolean>(false);
   const isOpenCreateFolderModal = ref<boolean>(false);
+  const isOpenDeleteModal = ref<boolean>(false);
   const dirPath = ref(""); // "/Users/dimitrijevujcic/Desktop/Dimitrije/Bachelor\'s_degree/code-editor";
   const createFileOrFolderPath = ref("");
+  const deleteFileOrFolderPath = ref("");
 
   function processFilesAndFolders(filesAndFolders: any) {
     const children = filesAndFolders.children;
@@ -79,6 +82,12 @@
     createFileOrFolderPath.value = path;
   }
 
+  function openDeleteModal(path: string | undefined) {
+    isOpenDeleteModal.value = true;
+    if (!path) return;
+    deleteFileOrFolderPath.value = path;
+  }
+
   function createFile(fileName: string | undefined) {
     var path = createFileOrFolderPath.value;
     isOpenCreateFileModal.value = false;
@@ -132,6 +141,11 @@
     @confirm-folder-name="createFolder"
     @close-modal="isOpenCreateFolderModal = false"
   />
+  <DeleteModal
+    :isOpen="isOpenDeleteModal"
+    :deleteFileOrFolderPath="deleteFileOrFolderPath"
+    @close-modal="isOpenDeleteModal = false"
+  />
 
   <div class="project-explorer">
     <div class="project-explorer-header">PROJECT EXPLORER</div>
@@ -144,6 +158,7 @@
           @reload-project="loadProject"
           @open-create-file-modal="openCreateFileModal"
           @open-create-folder-modal="openCreateFolderModal"
+          @open-delete-modal="openDeleteModal"
         />
     </div>
     <div v-else class="open-project">

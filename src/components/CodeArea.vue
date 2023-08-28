@@ -9,7 +9,10 @@
     const codeAreaRef = ref(null);
     const contentEditable = ref(false);
 
+    const fileContent = ref("");
+
     var editedFilesToDisplay: boolean = false;
+    var timeout: any = undefined;
 
     onMounted(() => {
         refreshNumberOfLines();
@@ -29,6 +32,38 @@
 
         const height = parseFloat(window.getComputedStyle(codeAreaRef.value).height);
         numberOfLines.value = Math.floor(height / 22.5);
+    }
+
+    function debounce() {
+        if (timeout !== undefined) {
+            clearTimeout(timeout);
+        }
+
+        timeout = setTimeout(async () => {
+            console.log("Highlight ", fileContent.value);
+            const hc = await syntaxHighlightingAndParsing(fileContent.value, filesToDisplay[0].name);
+            console.log("Finished highlighting");
+
+            const position = getCaretPosition();
+            if (codeAreaRef.value && hc)
+                (codeAreaRef.value as HTMLDivElement).innerHTML = hc;
+            moveCursorToPosition(position);
+        }, 500);
+    }
+
+    function getTextNodes(node: Node): Node[] {
+        const textNodes: Node[] = [];
+
+        if (node.nodeType === Node.TEXT_NODE) {
+            textNodes.push(node);
+        } else {
+            const children = node.childNodes;
+            for (let i = 0; i < children.length; i++) {
+                textNodes.push(...getTextNodes(children[i]));
+            }
+        }
+
+        return textNodes;
     }
 
     function getCaretPosition() {
@@ -75,68 +110,15 @@
         }
     }
 
-    function getTextNodes(node: Node): Node[] {
-        const textNodes: Node[] = [];
-
-        if (node.nodeType === Node.TEXT_NODE) {
-            textNodes.push(node);
-        } else {
-            const children = node.childNodes;
-            for (let i = 0; i < children.length; i++) {
-                textNodes.push(...getTextNodes(children[i]));
-            }
-        }
-
-        return textNodes;
-    }
-
-    async function highlightCode(codeAreaRef: any, fileName: string) {
-        if (codeAreaRef.value) {
-            const position = getCaretPosition();
-            const code = (codeAreaRef.value as HTMLDivElement).innerText;
-            if (!code)
-                return;
-            
-            const highlighted = await syntaxHighlightingAndParsing(code, fileName);
-            if (highlighted)
-                (codeAreaRef.value as HTMLDivElement).innerHTML = highlighted;
-
-            moveCursorToPosition(position);
-        }
-    }
-
-    function insertCharacterAtPosition(position: number, character: any) {
-        const codeAreaRef = document.getElementById("code-area");
-        if (!codeAreaRef || !codeAreaRef.textContent 
-            || position < 0 || position > codeAreaRef.textContent.length) 
-                return;
-
-        const selection = window.getSelection();
-        if (selection && selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            range.collapse(true);
-
-            const newNode = document.createTextNode(character);
-            range.insertNode(newNode);
-
-            range.setStartAfter(newNode);
-            range.setEndAfter(newNode);
-
-            selection.removeAllRanges();
-            selection.addRange(range);
-        }
-    }
-
-    function handleInput(event: any) {
-        refreshNumberOfLines();
+    function handleInput(_event: any) {
         filesToDisplay[0].edited = true;
-        editedFilesToDisplay = true;
 
-        if (event.inputType === 'insertParagraph' && codeAreaRef.value) {
-            insertCharacterAtPosition(getCaretPosition(), '\n');
+        if (codeAreaRef.value) {
+            var txtCnt = (codeAreaRef.value as HTMLDivElement).textContent;
+            if (txtCnt)
+                fileContent.value = txtCnt;
         }
-
-        highlightCode(codeAreaRef, filesToDisplay[0].name);
+        debounce();
     }
 
     function handleTabKey(event: any) {
@@ -192,14 +174,12 @@
         const fileToDisplay = newFilesToDisplay[0];
         try {
             // @ts-ignore
-            const fileContent = await window.electron.loadFileContent(fileToDisplay.path);
+            const file = await window.electron.loadFileContent(fileToDisplay.path);
             if (codeAreaRef.value) {
-                (codeAreaRef.value as HTMLDivElement).innerText = fileContent;
-
-                refreshNumberOfLines();
+                fileContent.value = file;
+                debounce();
             }
             contentEditable.value = true;
-            highlightCode(codeAreaRef, filesToDisplay[0].name);
         } catch (error) {
             console.error("Error occurred:", error);
         }
@@ -223,6 +203,7 @@
                 @keydown.tab.prevent="handleTabKey"
             >
                 <!-- File content -->
+                {{ fileContent }}
             </code>
         </div>
         <div class="right-panel">

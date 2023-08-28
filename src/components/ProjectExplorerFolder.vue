@@ -5,6 +5,7 @@
     'add-tab',
     'open-create-file-modal',
     'open-create-folder-modal',
+    'open-delete-modal',
     'reload-project'
   ]);
 
@@ -19,6 +20,12 @@
       return;
     
     folder.opened = !folder.opened;
+  }
+
+  function openDeleteModal(path: string | undefined, event: Event) {
+    if (event)
+      event.stopPropagation();
+    emit('open-delete-modal', path);
   }
 
   function openCreateFileModal(path: string | undefined, event: Event) {
@@ -55,6 +62,9 @@
           {{folder?.name}}
         </div>
         <div v-if="showFolderOptions === folder" class="folder-options">
+          <div class="folder-options-item" @click="openDeleteModal(folder?.path, $event)">
+            <i class="bi bi-trash"></i>
+          </div>
           <div class="folder-options-item" @click="openCreateFileModal(folder?.path, $event)">
             <i class="bi bi-file-earmark-plus"></i>
           </div>
@@ -77,6 +87,9 @@
             {{folder?.name}}
           </div>
           <div v-if="showFolderOptions === folder" class="folder-options">
+            <div class="folder-options-item" @click="openDeleteModal(folder?.path, $event)">
+              <i class="bi bi-trash"></i>
+            </div>
             <div class="folder-options-item" @click="openCreateFileModal(folder?.path, $event)">
               <i class="bi bi-file-earmark-plus"></i>
             </div>
@@ -96,6 +109,7 @@
                 @add-tab="openFile"
                 @open-create-file-modal="openCreateFileModal"
                 @open-create-folder-modal="openCreateFolderModal"
+                @open-delete-modal="openDeleteModal"
                 @reload-project="$emit('reload-project')"
             />
             <div v-else @click.stop="toggleFolder(child)" @dblclick="openFile(child)" class="hover-contrast">

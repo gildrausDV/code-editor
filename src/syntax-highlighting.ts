@@ -9,6 +9,7 @@ import c from 'highlight.js/lib/languages/c';
 import java from 'highlight.js/lib/languages/java';
 import csharp from 'highlight.js/lib/languages/csharp';
 import bash from 'highlight.js/lib/languages/bash';
+import json from 'highlight.js/lib/languages/json';
 
 import * as esprima from 'esprima';
 // import { parse } from '@typescript-eslint/parser';
@@ -141,6 +142,9 @@ export async function syntaxHighlightingAndParsing(code: string, fileName: strin
     } else if (fileExtension === 'cs') {
         language = 'cs';
         hljs.registerLanguage('cs', csharp);
+    } else if (fileExtension === 'json') {
+        language = 'json';
+        hljs.registerLanguage('json', json);
     }
 
     const options = { language };
