@@ -15,7 +15,7 @@
         event.data === null && event.inputType === 'insertText') {
       
       // @ts-ignore
-      window.electron.sendKeyStroke(editableContent.value + "\n");
+      window.electron.sendCommand(editableContent.value + "\n");
       editableContent.value = "";
     }
   }
@@ -37,7 +37,7 @@
     });
 
     // @ts-ignore
-    window.electron.sendKeyStroke("\n");
+    window.electron.sendCommand("\n");
   });
 
   watch(dirPath, (_newDirPath) => {
@@ -45,7 +45,7 @@
         return;
 
       // @ts-ignore
-      window.electron.sendKeyStroke("cd " + dirPath.dirPath[0] + "\n");
+      window.electron.sendCommand("cd " + dirPath.dirPath[0] + "\n");
   });
 
 </script>

@@ -49,7 +49,7 @@ function createWindow() {
     // console.log("Data sent", data);
   });
   
-  ipcMain.handle("terminal-keystroke", (_event, key) => {
+  ipcMain.handle("terminal-command", (_event, key) => {
       ptyProcess.write(key);
   });
 
@@ -82,7 +82,6 @@ const rootDirectory = {
 };
 
 const readFiles = async (directoryPath: string, currentDirectory: any) => {
-  // const splitPath = directoryPath.split("/");
   const splitPath = directoryPath.split(
       process.platform === "win32" ? "\\" : "/"
     );

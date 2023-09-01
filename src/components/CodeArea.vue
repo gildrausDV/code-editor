@@ -2,6 +2,7 @@
 
     import { onMounted, ref, watch/*, computed*/ } from 'vue';
     import { syntaxHighlightingAndParsing } from '../syntax-highlighting';
+    import SearchModal from '../components/SearchModal.vue'
 
     const { filesToDisplay } = defineProps(['filesToDisplay']);
 
@@ -9,10 +10,14 @@
     const codeAreaRef = ref(null);
     const contentEditable = ref(false);
 
+    const isOpenSearchModal = ref<boolean>(false);
+
     const fileContent = ref("");
 
     var editedFilesToDisplay: boolean = false;
     var timeout: any = undefined;
+    var contentBeforeSearchHighlighting: string | undefined = undefined;
+    var currentSearchToken: number = -1;
 
     onMounted(() => {
         refreshNumberOfLines();
@@ -20,6 +25,8 @@
         window.addEventListener('keydown', (event) => {
             if ((event.metaKey || event.ctrlKey) && event.key === 's') {
                 saveFile();
+            } else if ((event.metaKey || event.ctrlKey) && event.key === 'f') {
+                isOpenSearchModal.value = true;
             }
         });
 
@@ -39,10 +46,11 @@
             clearTimeout(timeout);
         }
 
+        refreshNumberOfLines();
         timeout = setTimeout(async () => {
-            console.log("Highlight ", fileContent.value);
+            // console.log("Highlight ", fileContent.value);
             const hc = await syntaxHighlightingAndParsing(fileContent.value, filesToDisplay[0].name);
-            console.log("Finished highlighting");
+            // console.log("Finished highlighting");
 
             const position = getCaretPosition();
             if (codeAreaRef.value && hc)
@@ -160,6 +168,69 @@
         filesToDisplay[0].edited = false;
     }
 
+    async function highlightSearchedContent(searchWord: string) {
+        contentBeforeSearchHighlighting = await syntaxHighlightingAndParsing(fileContent.value, filesToDisplay[0].name);
+        if (!contentBeforeSearchHighlighting)
+            contentBeforeSearchHighlighting = fileContent.value;
+
+        const contentAfterSearchHighlighting = contentBeforeSearchHighlighting.replace(
+            new RegExp(searchWord, 'gi'), 
+            "<span class='search-highlight'>" + searchWord + "</span>"
+        );
+        if (codeAreaRef.value)
+            (codeAreaRef.value as HTMLDivElement).innerHTML = contentAfterSearchHighlighting;
+        
+        searchNext();
+    }
+
+    function removeHighlightedSearchedContent() {
+        if (codeAreaRef.value && contentBeforeSearchHighlighting)
+            (codeAreaRef.value as HTMLDivElement).innerHTML = contentBeforeSearchHighlighting;
+        currentSearchToken = -1;
+    }
+
+    function addCurrentSearchTokenHighlight() {
+        if (codeAreaRef.value) {
+            const searchCollection = (codeAreaRef.value as HTMLDivElement).getElementsByClassName('search-highlight');
+            searchCollection.item(currentSearchToken)?.classList.add('current-search-token');
+        }
+    }
+
+    function getNumberOfHighlightedWords() {
+        if (codeAreaRef.value) {
+            const searchCollection = (codeAreaRef.value as HTMLDivElement).getElementsByClassName('search-highlight');
+            return searchCollection.length;
+        }
+        return 0;
+    }
+
+    function removeCurrentSearchTokenHighlight() {
+        if (codeAreaRef.value) {
+            const searchCollection = (codeAreaRef.value as HTMLDivElement).getElementsByClassName('search-highlight');
+            searchCollection.item(currentSearchToken)?.classList.remove('current-search-token');
+        }
+    }
+
+    function searchNext() {
+        removeCurrentSearchTokenHighlight();
+        currentSearchToken = (currentSearchToken + 1) % getNumberOfHighlightedWords();
+        addCurrentSearchTokenHighlight();
+    }
+
+    function searchPrev() {
+        removeCurrentSearchTokenHighlight();
+        currentSearchToken = (currentSearchToken - 1) % getNumberOfHighlightedWords();
+        addCurrentSearchTokenHighlight();
+    }
+
+    // @ts-ignore
+    function scrollToLine(line: number) {
+        document.getElementById("code-area-container")?.scroll({
+            top: 22.5 * (line - 1),
+            behavior: "smooth"
+        });
+    }
+
     watch(filesToDisplay, async (newFilesToDisplay) => {
         if (editedFilesToDisplay) {
             editedFilesToDisplay = false;
@@ -188,8 +259,17 @@
 </script>
 
 <template>
+    <!-- Modals -->
+    <SearchModal
+        :isOpen="isOpenSearchModal"
+        @search-content="highlightSearchedContent"
+        @search-next="searchNext"
+        @search-prev="searchPrev"
+        @close-modal="isOpenSearchModal = false; removeHighlightedSearchedContent();"
+    />
+
     <div class="code-area-container">
-        <div class="rows-and-code-container">
+        <div class="rows-and-code-container" id="code-area-container">
             <div class="rows">
                 <div v-if="contentEditable" v-for="num in numberOfLines">{{ num }}</div>
             </div>

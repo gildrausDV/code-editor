@@ -23,6 +23,14 @@ body {
   min-width: 5px;
 }
 
+.search-highlight {
+  background-color: gray;
+}
+
+.current-search-token {
+  background-color: darkslategray;
+}
+
 .error-line::after {
   content: '';
   position: absolute;

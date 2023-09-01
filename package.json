@@ -18,6 +18,8 @@
     "highlight.js": "^11.8.0",
     "java-parser": "^2.0.4",
     "node-pty": "^1.0.0",
+    "python-ast": "^0.1.0",
+    "python-shell": "^5.0.0",
     "vue": "^3.2.47",
     "xterm": "^5.2.1"
   },

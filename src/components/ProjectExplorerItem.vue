@@ -103,7 +103,7 @@
             <div v-for="_x in child.level">
                 &nbsp;
             </div>
-            <ProjectExplorerFolder
+            <ProjectExplorerItem
                 v-if="child['type'] === 'directory'"
                 :folder="child"
                 @add-tab="openFile"

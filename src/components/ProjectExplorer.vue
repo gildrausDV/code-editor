@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { ref, onMounted } from 'vue';
-  import ProjectExplorerFolder from './ProjectExplorerFolder.vue'
+  import ProjectExplorerItem from './ProjectExplorerItem.vue'
   import CreateFileModal from './CreateFileModal.vue';
   import CreateFolderModal from './CreateFolderModal.vue';
   import DeleteModal from './DeleteModal.vue';
@@ -151,15 +151,15 @@
     <div class="project-explorer-header">PROJECT EXPLORER</div>
     <hr>
     <div v-if="dirPath !== ''" class="project-structure">
-      <ProjectExplorerFolder
-          v-if="filesToDisplay.type === 'directory'"
-          :folder="filesToDisplay"
-          @add-tab="openFile"
-          @reload-project="loadProject"
-          @open-create-file-modal="openCreateFileModal"
-          @open-create-folder-modal="openCreateFolderModal"
-          @open-delete-modal="openDeleteModal"
-        />
+      <ProjectExplorerItem
+        v-if="filesToDisplay.type === 'directory'"
+        :folder="filesToDisplay"
+        @add-tab="openFile"
+        @reload-project="loadProject"
+        @open-create-file-modal="openCreateFileModal"
+        @open-create-folder-modal="openCreateFolderModal"
+        @open-delete-modal="openDeleteModal"
+      />
     </div>
     <div v-else class="open-project">
       <button class="btn open-project-btn" @click="chooseProject">Open project</button>

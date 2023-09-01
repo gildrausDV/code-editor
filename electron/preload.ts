@@ -105,7 +105,7 @@ contextBridge.exposeInMainWorld('electron', {
   createFile: async (dirPath: string) => ipcRenderer.invoke('create-file', dirPath),
 
   // Terminal invokes
-  sendKeyStroke: async (data: any) => ipcRenderer.invoke('terminal-keystroke', data),
+  sendCommand: async (data: any) => ipcRenderer.invoke('terminal-command', data),
 
   terminalIncomingData: (func: Function) => {
     ipcRenderer.on("terminal.incomingData", (event, ...args) => func(event, ...args));       
