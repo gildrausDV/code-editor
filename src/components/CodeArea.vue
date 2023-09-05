@@ -26,7 +26,7 @@
             if ((event.metaKey || event.ctrlKey) && event.key === 's') {
                 saveFile();
             } else if ((event.metaKey || event.ctrlKey) && event.key === 'f') {
-                isOpenSearchModal.value = true;
+                isOpenSearchModal.value = !isOpenSearchModal.value;
             }
         });
 
@@ -168,8 +168,10 @@
         filesToDisplay[0].edited = false;
     }
 
-    async function highlightSearchedContent(searchWord: string) {
-        contentBeforeSearchHighlighting = await syntaxHighlightingAndParsing(fileContent.value, filesToDisplay[0].name);
+    function highlightSearchedContent(searchWord: string) {
+        if (codeAreaRef.value)
+            contentBeforeSearchHighlighting = (codeAreaRef.value as HTMLDivElement).innerHTML;
+        
         if (!contentBeforeSearchHighlighting)
             contentBeforeSearchHighlighting = fileContent.value;
 

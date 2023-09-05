@@ -112,14 +112,39 @@
                 @open-delete-modal="openDeleteModal"
                 @reload-project="$emit('reload-project')"
             />
-            <div v-else @click.stop="toggleFolder(child)" @dblclick="openFile(child)" class="hover-contrast">
-                {{ child['name'] }}
+            <div v-else @click.stop="toggleFolder(child)" @dblclick="openFile(child)" class="hover-contrast" 
+              @mouseenter="showFolderOptions = child" 
+              @mouseleave="showFolderOptions = undefined">
+              <div>
+                {{child['name']}}
+              </div>
+              <div v-if="showFolderOptions === child" class="folder-options">
+                <div class="folder-options-item" @click="openDeleteModal(child?.path, $event)">
+                  <i class="bi bi-trash"></i>
+                </div>
+              </div>
             </div>
         </div>
     </div>
-    <div v-if="folder?.type === 'file'" @dblclick="openFile(folder)" class="hover-contrast">
-        {{folder?.name}}
-    </div>
+    <div v-if="folder?.type === 'file'" @dblclick="openFile(folder)" class="hover-contrast"
+        @mouseenter="showFolderOptions = folder" 
+        @mouseleave="showFolderOptions = undefined">
+        <div>
+          <i class="bi bi-chevron-down"></i> 
+          {{folder?.name}}
+        </div>
+        <div v-if="showFolderOptions === folder" class="folder-options">
+          <div class="folder-options-item" @click="openDeleteModal(folder?.path, $event)">
+            <i class="bi bi-trash"></i>
+          </div>
+          <div class="folder-options-item" @click="openCreateFileModal(folder?.path, $event)">
+            <i class="bi bi-file-earmark-plus"></i>
+          </div>
+          <div class="folder-options-item" @click="openCreateFolderModal(folder?.path, $event)">
+            <i class="bi bi-folder-plus"></i>
+          </div>
+        </div>
+      </div>
 </template>
 
 <style scoped>

@@ -48,19 +48,6 @@
                         <i class="bi bi-arrow-down search-option" @click="next"></i>
                         <i class="bi bi-x search-option" @click="closeModal"></i>
                     </div>
-                    <!-- <div class="modal-header">
-                        <button type="button" @click="closeModal" class="btn-close"></button>
-                    </div>
-                    <div class="modal-body search-modal-body">
-                        <div>
-                            Search word: <input ref="searchInput" class="word-search-input" type="text" maxlength="25">
-                            <button class="btn btn-search" type="button" @click="search">Search</button>
-                        </div>
-                    </div>
-                    <div class="modal-footer search-modal-footer">
-                        <button class="btn btn-next" type="button" @click="next">Next</button>
-                        <button class="btn btn-prev" type="button" @click="prev">Prev</button>
-                    </div> -->
                 </div>
             </div>
         </div>

@@ -1,13 +1,13 @@
 <script setup lang="ts">
     const { isOpen, deleteFileOrFolderPath } = defineProps(['isOpen', 'deleteFileOrFolderPath']);
-    const emit = defineEmits(['confirm-file-name', 'close-modal']);
+    const emit = defineEmits(['confirm-delete', 'close-modal']);
 
     function closeModal() {
         emit('close-modal');
     }
 
     function confirm() {
-        
+        emit('confirm-delete', deleteFileOrFolderPath);
     }
 </script>
 

@@ -88,6 +88,18 @@
     deleteFileOrFolderPath.value = path;
   }
 
+  function deleteFileOrFolder() {
+    isOpenDeleteModal.value = false;
+
+    // @ts-ignore
+    window.electron.deleteFileOrFolder(deleteFileOrFolderPath.value).then(() => {
+      console.log("Delete path: " + deleteFileOrFolderPath.value);
+      loadProject();
+    }).catch((error: any) => {
+      console.log("Error", error);
+    });
+  }
+
   function createFile(fileName: string | undefined) {
     var path = createFileOrFolderPath.value;
     isOpenCreateFileModal.value = false;
@@ -144,6 +156,7 @@
   <DeleteModal
     :isOpen="isOpenDeleteModal"
     :deleteFileOrFolderPath="deleteFileOrFolderPath"
+    @confirm-delete="deleteFileOrFolder"
     @close-modal="isOpenDeleteModal = false"
   />
 

@@ -119,6 +119,41 @@ const readFiles = async (directoryPath: string, currentDirectory: any) => {
   }
 };
 
+const deleteFileOrFolder = (fileOrFolderPath: string) => {
+  
+  if (!fs.statSync(fileOrFolderPath).isDirectory()) {
+    console.log("Delete: " + fileOrFolderPath);
+    fs.unlink(fileOrFolderPath, (err: any) => {
+      if (err) throw err;
+    });
+
+    return;
+  }
+
+  fs.readdir(fileOrFolderPath, (err: any, elements: any) => {
+    if (err) throw err;
+  
+    for (const element of elements) {
+      if (fs.statSync(path.join(fileOrFolderPath, element)).isDirectory()) {
+        deleteFileOrFolder(path.join(fileOrFolderPath, element));
+      } else {
+        console.log("Delete: " + fileOrFolderPath + "\\" + element);
+        fs.unlink(path.join(fileOrFolderPath, element), (err: any) => {
+          if (err) throw err;
+        });
+      }
+    }
+
+    fs.rmdir(fileOrFolderPath, (err: any) => {
+      if (err) throw err;
+    });
+  });
+}
+
+ipcMain.handle('delete', async (_event, path) => {
+  deleteFileOrFolder(path);
+});
+
 ipcMain.handle('get-files', async (_event, dirPath) => {
   rootDirectory.children = [];
 

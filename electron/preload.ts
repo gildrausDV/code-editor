@@ -103,6 +103,7 @@ contextBridge.exposeInMainWorld('electron', {
   openProject: async () => ipcRenderer.invoke('open-project'),
   createFolder: async (dirPath: string) => ipcRenderer.invoke('create-folder', dirPath),
   createFile: async (dirPath: string) => ipcRenderer.invoke('create-file', dirPath),
+  deleteFileOrFolder: async (path: string) => ipcRenderer.invoke('delete', path),
 
   // Terminal invokes
   sendCommand: async (data: any) => ipcRenderer.invoke('terminal-command', data),
